@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Membro {
+  id             String        @id @default(uuid()) @db.Uuid
+  firstName      String
+  lastName       String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  userInCharge   User?         @relation(fields: [userInChargeId], references: [id])
+  userInChargeId String?       @unique @db.Uuid
+  transactions   Transaction[]
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  name String?
+
+  email String @unique
+
+  password String
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  members Membro?
+  stores  Store[]
+}
+
+model Store {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String
+  description   String
+  address       String?
+  email         String
+  phone         String? //phone number of store owner
+  logoUrl       String?
+  createdAt     DateTime      @default(now())
+  
+  managerUser   User?         @relation(fields: [managerUserId], references: [id])
+  managerUserId String?       @db.Uuid
+  transactions   Transaction[]
+}
+
+model Transaction {
+  id       String @id @default(uuid()) @db.Uuid
+  memberId String @db.Uuid
+  member   Membro @relation(fields: [memberId], references: [id])
+  storeId  String @db.Uuid
+  store    Store  @relation( fields: [storeId], references: [id])
+  balance  Float
+  transactionType String
+  transactionAmount Float
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
